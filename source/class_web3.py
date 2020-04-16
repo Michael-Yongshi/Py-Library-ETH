@@ -1,9 +1,42 @@
 import os
 import time
 
-from web3 import Web3
+from web3 import Web3, auto
 
 from source.methods_json import load_json
+
+class Web3Methods(object):
+    def __init__(self, w3, contract, account):
+        super().__init__()
+        self.w3 = w3
+        self.contract = contract
+        self.account = account
+        
+    @staticmethod
+    def create_private_key():
+
+        random_string = os.urandom(30).hex() 
+        accnt = auto.w3.eth.account.create(random_string)
+        wallet_private_key = accnt.privateKey.hex()[2:]
+
+        print(f"New privatekey generated: {wallet_private_key}")
+        return wallet_private_key
+
+    @staticmethod
+    def try_private_key(data):
+
+        # check if it is a private key
+        try:
+            auto.w3.eth.account.from_key(data)
+            private_key_found = True
+        except:
+            private_key_found = False
+        
+        return private_key_found
+
+# class Web3Connection(Web3):
+#     def __init__(self):
+#         super().__init__()
 
 class Web3Connection(object):
     def __init__(self, w3, contract, account):
@@ -11,7 +44,7 @@ class Web3Connection(object):
         self.w3 = w3
         self.contract = contract
         self.account = account
-        
+
     @staticmethod
     def initialize(network_url, wallet_private_key, abi, contract_address="", solidity="", bytecode=""):
         
