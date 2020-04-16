@@ -17,11 +17,10 @@ class Web3Connection(object):
         
         # Connect to specific network
         w3 = Web3(Web3.HTTPProvider(network_url))
-        print(w3.isConnected())
+        print(f"Connected to ethereum node {network_url}: {w3.isConnected()}")
 
         # account to interact from
         account = w3.eth.account.privateKeyToAccount(wallet_private_key)
-        print(account.address)
 
         if contract_address == "" and bytecode == "" and solidity == "":
 
@@ -42,7 +41,7 @@ class Web3Connection(object):
             # print(abi)
             
             contract = w3.eth.contract(abi = abi, address = contract_address)
-            print(contract.address)
+            print(f"Connected to ethereum smart contract: {contract.address}")
 
             return Web3Connection(
                 w3 = w3,
