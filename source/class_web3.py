@@ -16,11 +16,21 @@ class Web3Methods(object):
     def create_private_key():
 
         random_string = os.urandom(30).hex() 
-        accnt = auto.w3.eth.account.create(random_string)
-        wallet_private_key = accnt.privateKey.hex()[2:]
+        account = auto.w3.eth.account.create(random_string)
+        wallet_private_key = account.privateKey.hex()[2:]
 
         print(f"New privatekey generated: {wallet_private_key}")
+        print("")
+
         return wallet_private_key
+
+    @staticmethod
+    def get_address(wallet_private_key):
+
+        account = auto.w3.eth.account.privateKeyToAccount()
+        address = account.address
+
+        return address
 
     @staticmethod
     def search_private_key(data):
@@ -33,6 +43,7 @@ class Web3Methods(object):
                 auto.w3.eth.account.from_key(wallet_private_key)
                 private_key_found = True
                 print(f"tag has a valid private key")
+                print("")
 
             except:
                 private_key_found = False
@@ -45,33 +56,48 @@ class Web3Methods(object):
         return private_key_found
 
     @staticmethod
-    def faucet(address):
-        pass
-# >>> transaction = {
-#         'to': '0xF0109fC8DF283027b6285cc889F5aA624EaC1F55',
-#         'value': 1000000000,
-#         'gas': 2000000,
-#         'gasPrice': 234567897654321,
-#         'nonce': 0,
-#         'chainId': 1
-#     }
-# >>> key = '0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318'
-# >>> signed = w3.eth.account.signTransaction(transaction, key)
+    def transfer(network_url, wallet_private_key, to_address, amount):
+        
+        print("Trying to transfer ETH")
+        
+        # connect to our node with the wallet to be send from
+        ethconnect = Web3Connection.initialize_connection(network_url)
+        ethconnect.initialize_wallet(wallet_private_key)
 
-# >>> signed.rawTransaction
-# HexBytes('0xf86a8086d55698372431831e848094f0109fc8df283027b6285cc889f5aa624eac1f55843b9aca008025a009ebb6ca057a0535d6186462bc0b465b561c94a295bdb0621fc19208ab149a9ca0440ffd775ce91a833ab410777204d5341a6f9fa91216a6f3ee2c051fea6a0428')
-# >>> signed.hash
-# HexBytes('0xd8f64a42b57be0d565f385378db2f6bf324ce14a594afc05de90436e9ce01f60')
-# >>> signed.r
-# 4487286261793418179817841024889747115779324305375823110249149479905075174044
-# >>> signed.s
-# 30785525769477805655994251009256770582792548537338581640010273753578382951464
-# >>> signed.v
-# 37
+        # get nonce for txn input
+        nonce = ethconnect.w3.eth.getTransactionCount(ethconnect.account.address)
 
-# # When you run sendRawTransaction, you get back the hash of the transaction:
-# >>> w3.eth.sendRawTransaction(signed.rawTransaction) 
+        # build transaction to transfer the amount of eth to the mentioned address
+        txn_dict = {
+                'nonce': nonce,
+                'to': to_address,
+                'value': amount,
+                'gas': 1648900,
+                'gasPrice': ethconnect.w3.toWei('10000000000', 'wei'),
+                'chainId': 3
+            }
+        print("build txn dict: " + str(txn_dict))
 
+        # sign transaction
+        txn_signed = ethconnect.account.signTransaction(txn_dict)
+        # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
+
+        # send transaction
+        txn_hash = ethconnect.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        print(f"Transaction send with hash: {txn_hash.hex()}")
+
+        # wait for processing
+        print("waiting for nodes to handle txn")
+        time.sleep(60)
+
+        # request receipt
+        txn_receipt = ethconnect.w3.eth.getTransactionReceipt(txn_hash.hex())
+        print(f"Requested receipt: {txn_receipt}")
+
+        print(f"Deposited 0,1 Eth in this account")
+        print("")
+
+        return txn_hash
 
 class Web3Connection(object):
     def __init__(self, w3, account = None, contract = None):
@@ -94,6 +120,7 @@ class Web3Connection(object):
         # account to interact from
         self.account = self.w3.eth.account.privateKeyToAccount(wallet_private_key)
         print(f"Connected with key belonging to {self.account.address}")
+        print("")
 
     def initialize_contract(self, abi, contract_address="", solidity="", bytecode=""):
 
@@ -117,6 +144,7 @@ class Web3Connection(object):
             
             self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
             print(f"Connected to ethereum smart contract: {self.contract.address}")
+            print("")
 
     def init_deploy_solidity(self, abi, solidity):
         NotImplemented
