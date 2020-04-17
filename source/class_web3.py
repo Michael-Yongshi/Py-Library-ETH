@@ -25,14 +25,6 @@ class Web3Methods(object):
         return wallet_private_key
 
     @staticmethod
-    def get_address(wallet_private_key):
-
-        account = auto.w3.eth.account.privateKeyToAccount()
-        address = account.address
-
-        return address
-
-    @staticmethod
     def search_private_key(data):
 
         try:
