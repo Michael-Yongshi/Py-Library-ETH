@@ -3,7 +3,7 @@ import time
 
 from web3 import Web3, auto
 
-from source.methods_json import load_json
+from .methods_json import load_json
 
 class Web3Methods(object):
     def __init__(self, w3, contract, account):
@@ -23,37 +23,79 @@ class Web3Methods(object):
         return wallet_private_key
 
     @staticmethod
-    def try_private_key(data):
+    def search_private_key(data):
 
-        # check if it is a private key
         try:
-            auto.w3.eth.account.from_key(data)
-            private_key_found = True
+            wallet_private_key = data
+            print(f"tag has data")
+
+            try:
+                auto.w3.eth.account.from_key(wallet_private_key)
+                private_key_found = True
+                print(f"tag has a valid private key")
+
+            except:
+                private_key_found = False
+                print(f"no valid private key found on tag")
+
         except:
+            print(f"tag is empty")
             private_key_found = False
-        
+
         return private_key_found
 
-# class Web3Connection(Web3):
-#     def __init__(self):
-#         super().__init__()
+    @staticmethod
+    def faucet(address):
+        pass
+# >>> transaction = {
+#         'to': '0xF0109fC8DF283027b6285cc889F5aA624EaC1F55',
+#         'value': 1000000000,
+#         'gas': 2000000,
+#         'gasPrice': 234567897654321,
+#         'nonce': 0,
+#         'chainId': 1
+#     }
+# >>> key = '0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318'
+# >>> signed = w3.eth.account.signTransaction(transaction, key)
+
+# >>> signed.rawTransaction
+# HexBytes('0xf86a8086d55698372431831e848094f0109fc8df283027b6285cc889f5aa624eac1f55843b9aca008025a009ebb6ca057a0535d6186462bc0b465b561c94a295bdb0621fc19208ab149a9ca0440ffd775ce91a833ab410777204d5341a6f9fa91216a6f3ee2c051fea6a0428')
+# >>> signed.hash
+# HexBytes('0xd8f64a42b57be0d565f385378db2f6bf324ce14a594afc05de90436e9ce01f60')
+# >>> signed.r
+# 4487286261793418179817841024889747115779324305375823110249149479905075174044
+# >>> signed.s
+# 30785525769477805655994251009256770582792548537338581640010273753578382951464
+# >>> signed.v
+# 37
+
+# # When you run sendRawTransaction, you get back the hash of the transaction:
+# >>> w3.eth.sendRawTransaction(signed.rawTransaction) 
+
 
 class Web3Connection(object):
-    def __init__(self, w3, contract, account):
+    def __init__(self, w3, account = None, contract = None):
         super().__init__()
         self.w3 = w3
-        self.contract = contract
         self.account = account
+        self.contract = contract
 
     @staticmethod
-    def initialize(network_url, wallet_private_key, abi, contract_address="", solidity="", bytecode=""):
-        
+    def initialize_connection(network_url):
+
         # Connect to specific network
         w3 = Web3(Web3.HTTPProvider(network_url))
         print(f"Connected to ethereum node {network_url}: {w3.isConnected()}")
 
+        return Web3Connection(w3)
+
+    def initialize_wallet(self, wallet_private_key):
+
         # account to interact from
-        account = w3.eth.account.privateKeyToAccount(wallet_private_key)
+        self.account = self.w3.eth.account.privateKeyToAccount(wallet_private_key)
+        print(f"Connected with key belonging to {self.account.address}")
+
+    def initialize_contract(self, abi, contract_address="", solidity="", bytecode=""):
 
         if contract_address == "" and bytecode == "" and solidity == "":
 
@@ -63,29 +105,22 @@ class Web3Connection(object):
 
             if bytecode != "":
                 # if bytecode is provided, create new contract (address) with provided bytecode
-                contract_address = Web3Connection.init_deploy_bytecode(w3, account, abi, bytecode)
+                contract_address = self.init_deploy_bytecode(abi, bytecode)
 
             elif solidity != "":
                 # if solidity contract is provided, create new contract (address) with provided contract
-                contract_address = Web3Connection.init_deploy_solidity(w3, account, abi, solidity)   
+                contract_address = self.init_deploy_solidity(abi, solidity)   
             
             # Setting up contract with the needed abi (functions) and the contract address (for instantiation)
             abi = load_json(abi["path"], abi["file"])
             # print(abi)
             
-            contract = w3.eth.contract(abi = abi, address = contract_address)
-            print(f"Connected to ethereum smart contract: {contract.address}")
+            self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
+            print(f"Connected to ethereum smart contract: {self.contract.address}")
 
-            return Web3Connection(
-                w3 = w3,
-                contract = contract,
-                account = account,
-            )
-
-    @staticmethod
-    def init_deploy_solidity(w3, account, abi, solidity):
+    def init_deploy_solidity(self, abi, solidity):
         NotImplemented
-
+        return contract_address
         # relative_path = os.path.join("source", solidity)
         # current_directory = os.path.dirname(os.path.dirname(__file__))
         # absolute_path = os.path.join(current_directory, relative_path)
@@ -106,8 +141,7 @@ class Web3Connection(object):
         #     source = infile.read()
         # compiled_sol = compile_source('pragma solidity ^0.4.0; contract A{ funcion A() public{}}')
 
-    @staticmethod
-    def init_deploy_bytecode(w3, account, abi, bytecode):
+    def init_deploy_bytecode(self, abi, bytecode):
         """deploying a new contract with abi and bytecode"""
 
         # getting bytecode by opening the bytecode text file and save it as a string
@@ -115,24 +149,24 @@ class Web3Connection(object):
             bytecode = infile.read()
 
         # set up the contract based on the bytecode and abi functions
-        contract = w3.eth.contract(abi = abi, bytecode = bytecode)
+        contract = self.w3.eth.contract(abi = abi, bytecode = bytecode)
 
         # construct transaction
         txn_construct = contract.constructor().buildTransaction({
-            'from': account.address,
-            'nonce': w3.eth.getTransactionCount(account.address),
-            'gasPrice': w3.toWei('10000000000', 'wei'),
+            'from': self.account.address,
+            'nonce': self.w3.eth.getTransactionCount(self.account.address),
+            'gasPrice': self.w3.toWei('10000000000', 'wei'),
             'chainId': 3, 
             }
         )
         # print(f"Constructed transaction: {txn_construct}") # Shows huge bit string
 
         # sign transaction
-        txn_signed = account.signTransaction(txn_construct)
+        txn_signed = self.account.signTransaction(txn_construct)
         # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
         # send transaction
-        txn_hash = w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
         print(f"Transaction send with hash: {txn_hash.hex()}")
 
         # wait for processing
@@ -140,7 +174,7 @@ class Web3Connection(object):
         time.sleep(60)
 
         # request receipt
-        txn_receipt = w3.eth.getTransactionReceipt(txn_hash.hex())
+        txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
         print(f"Requested receipt: {txn_receipt}")
 
         # return new contract address
