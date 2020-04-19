@@ -130,10 +130,7 @@ class Web3Connection(object):
                 # if solidity contract is provided, create new contract (address) with provided contract
                 contract_address = self.init_deploy_solidity(abi, solidity)   
             
-            # Setting up contract with the needed abi (functions) and the contract address (for instantiation)
-            abi = load_json(abi["path"], abi["file"])
-            # print(abi)
-            
+            # Setting up contract with the needed abi (functions) and the contract address (for instantiation) 
             self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
             print(f"Connected to ethereum smart contract: {self.contract.address}")
             print("")
