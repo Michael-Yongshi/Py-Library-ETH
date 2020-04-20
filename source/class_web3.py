@@ -29,7 +29,7 @@ class Web3Methods(object):
 
         try:
             wallet_private_key = data
-            print(f"tag has data")
+            print(f"tag has data {data}")
 
             try:
                 auto.w3.eth.account.from_key(wallet_private_key)
