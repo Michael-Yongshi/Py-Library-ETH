@@ -70,6 +70,16 @@ class Web3Methods(object):
             }
         print("build txn dict: " + str(txn_dict))
 
+        txn_hash = Web3Methods.send_transaction(ethconnect, txn_dict)
+
+        print(f"Deposited 0,1 Eth in this account")
+        print("")
+
+        return txn_hash
+    
+    @staticmethod
+    def send_transaction(ethconnect, txn_dict):
+        
         # sign transaction
         txn_signed = ethconnect.account.signTransaction(txn_dict)
         # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
@@ -78,18 +88,17 @@ class Web3Methods(object):
         txn_hash = ethconnect.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
         print(f"Transaction send with hash: {txn_hash.hex()}")
 
-        # wait for processing
-        print("waiting for nodes to handle txn")
-        time.sleep(60)
-
         # request receipt
-        txn_receipt = ethconnect.w3.eth.getTransactionReceipt(txn_hash.hex())
-        print(f"Requested receipt: {txn_receipt}")
+        status = "Waiting for receipt"
+        while status == "Waiting for receipt":
+            try:
+                txn_receipt = ethconnect.w3.eth.getTransactionReceipt(txn_hash.hex())
+                status = f"Confirmed with receipt: {txn_receipt}"
+                print(status)
+            except:
+                print(status)
 
-        print(f"Deposited 0,1 Eth in this account")
-        print("")
-
-        return txn_hash
+        return txn_receipt
 
 class Web3Connection(object):
     def __init__(self, w3, account = None, contract = None):
@@ -169,7 +178,7 @@ class Web3Connection(object):
         contract = self.w3.eth.contract(abi = abi, bytecode = bytecode)
 
         # construct transaction
-        txn_construct = contract.constructor().buildTransaction({
+        txn_dict = contract.constructor().buildTransaction({
             'from': self.account.address,
             'nonce': self.w3.eth.getTransactionCount(self.account.address),
             'gasPrice': self.w3.toWei('10000000000', 'wei'),
@@ -178,21 +187,23 @@ class Web3Connection(object):
         )
         # print(f"Constructed transaction: {txn_construct}") # Shows huge bit string
 
-        # sign transaction
-        txn_signed = self.account.signTransaction(txn_construct)
-        # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
+        txn_receipt = Web3Methods.send_transaction(self, txn_dict)
 
-        # send transaction
-        txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
-        print(f"Transaction send with hash: {txn_hash.hex()}")
+        # # sign transaction
+        # txn_signed = self.account.signTransaction(txn_dict)
+        # # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
-        # wait for processing
-        print("waiting for nodes to handle txn")
-        time.sleep(60)
+        # # send transaction
+        # txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        # print(f"Transaction send with hash: {txn_hash.hex()}")
 
-        # request receipt
-        txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
-        print(f"Requested receipt: {txn_receipt}")
+        # # wait for processing
+        # print("waiting for nodes to handle txn")
+        # time.sleep(60)
+
+        # # request receipt
+        # txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
+        # print(f"Requested receipt: {txn_receipt}")
 
         # return new contract address
         new_contract_address = txn_receipt["contractAddress"]
@@ -222,20 +233,22 @@ class Web3Connection(object):
             })
         print("build txn dict: " + str(txn_dict))
 
-        # sign transaction
-        txn_signed = self.account.signTransaction(txn_dict)
-        # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
+        txn_receipt = Web3Methods.send_transaction(self, txn_dict)
 
-        # send transaction
-        txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
-        print(f"Transaction send with hash: {txn_hash.hex()}")
+        # # sign transaction
+        # txn_signed = self.account.signTransaction(txn_dict)
+        # # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
-        # wait for processing
-        print("waiting for nodes to handle txn")
-        time.sleep(60)
+        # # send transaction
+        # txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        # print(f"Transaction send with hash: {txn_hash.hex()}")
 
-        # request receipt
-        txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
+        # # wait for processing
+        # print("waiting for nodes to handle txn")
+        # time.sleep(60)
+
+        # # request receipt
+        # txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
         print(f"Requested receipt: {txn_receipt}")
 
         # return creation of character
@@ -260,20 +273,22 @@ class Web3Connection(object):
             })
         # print(f"Constructed transaction: {txn_construct}") # Shows huge bit string
 
-        # sign transaction
-        txn_signed = self.account.signTransaction(txn_dict)
-        # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
+        txn_receipt = Web3Methods.send_transaction(self, txn_dict)
 
-        # send transaction
-        txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
-        print(f"Transaction send with hash: {txn_hash.hex()}")
+        # # sign transaction
+        # txn_signed = self.account.signTransaction(txn_dict)
+        # # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
-        # wait for processing
-        print("waiting for nodes to handle txn")
-        time.sleep(60)
+        # # send transaction
+        # txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        # print(f"Transaction send with hash: {txn_hash.hex()}")
 
-        # request receipt
-        txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
+        # # wait for processing
+        # print("waiting for nodes to handle txn")
+        # time.sleep(60)
+
+        # # request receipt
+        # txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
         print(f"Requested receipt: {txn_receipt}")
 
         # return created event
