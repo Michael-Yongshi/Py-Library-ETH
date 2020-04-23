@@ -97,6 +97,7 @@ class Web3Methods(object):
                 print(status)
             except:
                 print(status)
+                time.sleep(1)
 
         return txn_receipt
 
