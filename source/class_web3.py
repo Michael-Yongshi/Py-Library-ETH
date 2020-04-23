@@ -70,7 +70,7 @@ class Web3Methods(object):
             }
         print("build txn dict: " + str(txn_dict))
 
-        txn_hash = Web3Methods.send_transaction(ethconnect, txn_dict)
+        txn_hash = Web3Methods.send_transaction(ethconnect.w3, ethconnect.account, txn_dict)
 
         print(f"Deposited 0,1 Eth in this account")
         print("")
@@ -78,21 +78,21 @@ class Web3Methods(object):
         return txn_hash
     
     @staticmethod
-    def send_transaction(ethconnect, txn_dict):
+    def send_transaction(w3connection, account, txn_dict):
         
         # sign transaction
-        txn_signed = ethconnect.account.signTransaction(txn_dict)
+        txn_signed = account.signTransaction(txn_dict)
         # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
         # send transaction
-        txn_hash = ethconnect.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        txn_hash = w3connection.eth.sendRawTransaction(txn_signed.rawTransaction)
         print(f"Transaction send with hash: {txn_hash.hex()}")
 
         # request receipt
         status = "Waiting for receipt"
         while status == "Waiting for receipt":
             try:
-                txn_receipt = ethconnect.w3.eth.getTransactionReceipt(txn_hash.hex())
+                txn_receipt = w3connection.eth.getTransactionReceipt(txn_hash.hex())
                 status = f"Confirmed with receipt: {txn_receipt}"
                 print(status)
             except:
@@ -188,7 +188,7 @@ class Web3Connection(object):
         )
         # print(f"Constructed transaction: {txn_construct}") # Shows huge bit string
 
-        txn_receipt = Web3Methods.send_transaction(self, txn_dict)
+        txn_receipt = Web3Methods.send_transaction(self.w3, self.account, txn_dict)
 
         # # sign transaction
         # txn_signed = self.account.signTransaction(txn_dict)
@@ -212,116 +212,3 @@ class Web3Connection(object):
 
         return new_contract_address
 
-    def create_character(self, name, unit, race):
-
-        # get nonce for txn input
-        nonce = self.w3.eth.getTransactionCount(self.account.address)
-
-        # get identifier for function input
-        identifier = f"{name} - {unit} - {race}"
-
-        # build transaction
-        txn_dict = self.contract.functions.createRandomCharacter(
-            identifier, 
-            name, 
-            unit, 
-            race
-            ).buildTransaction({
-            'nonce': nonce,        
-            'gas': 1648900,
-            'gasPrice': self.w3.toWei('1000000000', 'wei'),
-            'chainId': 3,
-            })
-        print("build txn dict: " + str(txn_dict))
-
-        txn_receipt = Web3Methods.send_transaction(self, txn_dict)
-
-        # # sign transaction
-        # txn_signed = self.account.signTransaction(txn_dict)
-        # # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
-
-        # # send transaction
-        # txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
-        # print(f"Transaction send with hash: {txn_hash.hex()}")
-
-        # # wait for processing
-        # print("waiting for nodes to handle txn")
-        # time.sleep(60)
-
-        # # request receipt
-        # txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
-        print(f"Requested receipt: {txn_receipt}")
-
-        # return creation of character
-        newcharacter = f"added {name} a {unit} consist of {race}"
-
-        return newcharacter
-
-    def create_event(self, characterId, description):
-        """create an event for a specific character by sending input to the smart contract of cryptocharacter"""
-        # get nonce for txn input
-        nonce = self.w3.eth.getTransactionCount(self.account.address)
-
-        # construct transaction
-        txn_dict = self.contract.functions.createEvent(
-            characterId, 
-            description
-            ).buildTransaction({
-            'nonce': nonce,        
-            'gas': 1648900,
-            'gasPrice': self.w3.toWei('1000000000', 'wei'),
-            'chainId': 3,
-            })
-        # print(f"Constructed transaction: {txn_construct}") # Shows huge bit string
-
-        txn_receipt = Web3Methods.send_transaction(self, txn_dict)
-
-        # # sign transaction
-        # txn_signed = self.account.signTransaction(txn_dict)
-        # # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
-
-        # # send transaction
-        # txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
-        # print(f"Transaction send with hash: {txn_hash.hex()}")
-
-        # # wait for processing
-        # print("waiting for nodes to handle txn")
-        # time.sleep(60)
-
-        # # request receipt
-        # txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
-        print(f"Requested receipt: {txn_receipt}")
-
-        # return created event
-        newevent = f"Added event for {characterId}: {description}"
-
-        return newevent
-
-    def get_characters(self):
-        # print all knwon characters of the given wallet_address
-        characters = self.contract.functions.getCharactersByOwner(self.account.address).call()
-
-        characterlist = []
-        for i in characters:
-            charlist = self.contract.functions.characters(i).call()
-            idlist = [i]
-            character = idlist + charlist
-            characterlist += [character]
-
-        return characterlist
-
-    def get_events(self, characterId):
-        """get all events for a specific character by sending input to the smart contract of cryptocharacter"""
-
-        # get all knwon events of the given character
-        events = self.contract.functions.getEventsByCharacter(characterId).call()
-
-        history = []
-        history += ["characterId: " + str(characterId)]
-        for i in events:
-            eventlist = self.contract.functions.events(i).call()
-            idlist = [i]
-            event = idlist + [eventlist]
-            history += [event]
-
-        return history
