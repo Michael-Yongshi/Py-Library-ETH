@@ -35,24 +35,23 @@ class Web3Connection(object):
 
     def initialize_contract(self, abi, contract_address="", solidity="", bytecode=""):
 
-        if contract_address == "" and bytecode == "" and solidity == "":
+        if contract_address != "":
+            pass
 
-            print("provide valid contract address or privde a solidity or bytecode to create a new contract!")
+        elif bytecode != "":
+            # if bytecode is provided, create new contract (address) with provided bytecode
+            contract_address = self.create_txn_contract_bytecode(abi, bytecode)
+
+        elif solidity != "":
+            # if solidity contract is provided, create new contract (address) with provided contract
+            contract_address = self.create_txn_contract_solidity(abi, solidity)   
 
         else:
+            print("provide valid contract address or provide a solidity or bytecode to create a new contract!")
 
-            if bytecode != "":
-                # if bytecode is provided, create new contract (address) with provided bytecode
-                contract_address = self.create_txn_contract_bytecode(abi, bytecode)
-
-            elif solidity != "":
-                # if solidity contract is provided, create new contract (address) with provided contract
-                contract_address = self.create_txn_contract_solidity(abi, solidity)   
-            
-            # Setting up contract with the needed abi (functions) and the contract address (for instantiation) 
-            self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
-            print(f"Connected to ethereum smart contract: {self.contract.address}")
-            print("")
+        # Setting up contract with the needed abi (functions) and the contract address (for instantiation) 
+        self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
+        print(f"Connected to ethereum smart contract: {self.contract.address}")
 
     def create_txn_contract_solidity(self, abi, solidity):
         NotImplemented
