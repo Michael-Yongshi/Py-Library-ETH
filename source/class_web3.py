@@ -80,8 +80,8 @@ class Web3Connection(object):
         """deploying a new contract with abi and bytecode"""
 
         # getting bytecode by opening the bytecode text file and save it as a string
-        with open(bytecode, mode='r') as infile:
-            bytecode = infile.read()
+        # with open(bytecode, mode='r') as infile:
+        #     bytecode = infile.read()
 
         # set up the contract based on the bytecode and abi functions
         contract = self.w3.eth.contract(abi = abi, bytecode = bytecode)
