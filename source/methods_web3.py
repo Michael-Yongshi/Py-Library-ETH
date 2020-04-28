@@ -40,7 +40,21 @@ def transaction_dictionary_defaults():
     """nonce is mandatory, others are optional, if gas = 0 then the default will be used."""
     
     txn_build_dict = {
-        "gas": 1648900,
+        "gas": 2000000,
+        "gasPrice": auto.w3.toWei("10000000000", "wei"),
+        "chainId": 3,
+        }
+
+    # contract constructor uses nonce, chainid, gasprice, from
+    # function execute uses nonce, chainid, gasprice, gas, 
+    # transfer uses nonce, chainid, gasprice, gas, to, value, 
+
+    return txn_build_dict
+
+def deploy_dictionary_defaults():
+    """nonce is mandatory, others are optional, if gas = 0 then the default will be used."""
+    
+    txn_build_dict = {
         "gasPrice": auto.w3.toWei("10000000000", "wei"),
         "chainId": 3,
         }
