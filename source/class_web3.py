@@ -7,6 +7,7 @@ from .methods_web3 import (
     create_private_key,
     search_private_key,
     transaction_dictionary_defaults,
+    deploy_dictionary_defaults,
 )
 from .methods_json import load_json
 
@@ -87,7 +88,7 @@ class Web3Connection(object):
         contract = self.w3.eth.contract(abi = abi, bytecode = bytecode)
 
         # get the transaction default values (gasprice, chainid, gas)
-        txn_dict_build = transaction_dictionary_defaults()
+        txn_dict_build = deploy_dictionary_defaults()
         txn_dict_build.update({
             'nonce': self.w3.eth.getTransactionCount(self.account.address),
             })
