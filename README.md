@@ -1,4 +1,6 @@
-# WAM-Library-ETH
+# NOT SECURE! DEV ONLY!
+# PY-Library-ETH
+
 
 ### Solidity requisites
 
