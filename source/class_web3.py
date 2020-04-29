@@ -149,5 +149,8 @@ class Web3Connection(object):
             except:
                 print(status)
                 time.sleep(1)
+        
+        print("Waiting a bit to make sure the transaction completed")
+        time.sleep(5)
 
         return txn_receipt
