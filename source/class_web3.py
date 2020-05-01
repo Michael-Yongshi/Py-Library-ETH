@@ -56,7 +56,7 @@ class Web3Connection(object):
 
     def create_txn_contract_solidity(self, abi, solidity):
         NotImplemented
-        return contract_address
+        # return contract_address
         # relative_path = os.path.join("source", solidity)
         # current_directory = os.path.dirname(os.path.dirname(__file__))
         # absolute_path = os.path.join(current_directory, relative_path)
