@@ -18,20 +18,20 @@ def search_private_key(data):
 
     try:
         wallet_private_key = data
-        print(f"tag has data {data}")
+        # print(f"tag has data {data}")
 
         try:
             auto.w3.eth.account.from_key(wallet_private_key)
             private_key_found = True
-            print(f"tag has a valid private key")
-            print("")
+            # print(f"tag has a valid private key")
+            # print("")
 
         except:
             private_key_found = False
-            print(f"no valid private key found on tag")
+            # print(f"no valid private key found on tag")
 
     except:
-        print(f"tag is empty")
+        # print(f"tag is empty")
         private_key_found = False
 
     return private_key_found
