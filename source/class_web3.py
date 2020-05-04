@@ -20,43 +20,61 @@ class Web3Connection(object):
 
     @staticmethod
     def initialize_connection(network_url):
+        """Initialize a Web3 connection to the given node at a certain url
+        returns the connection if it executes successfully"""
 
         # Connect to specific network
-        w3 = Web3(Web3.HTTPProvider(network_url))
-        print(f"Connected to ethereum node {network_url}: {w3.isConnected()}")
-
-        return Web3Connection(w3)
+        try:
+            w3 = Web3(Web3.HTTPProvider(network_url))
+            print(f"Success: Web3 connection to ethereum node {network_url}: {w3.isConnected()}")
+            return Web3Connection(w3)
+        except:
+            return f"FAILED TO SET UP WEB3 CONNECTION TO NODE {network_url}"
 
     def initialize_wallet(self, wallet_private_key):
+        """initializes a wallet from a given private key
+        Returns the wallet address if it is successfully executed, otherwise an error message."""
 
-        # account to interact from
-        self.account = self.w3.eth.account.privateKeyToAccount(wallet_private_key)
-        print(f"Connected with key belonging to {self.account.address}")
-        print("")
+        # Connect to account
+        try:
+            self.account = self.w3.eth.account.privateKeyToAccount(wallet_private_key)
+            wallet_address = self.account.address
+            print(f"Success: Web3 connection to wallet at {wallet_address}")
+            return wallet_address
+        except:
+            print(f"FAILED TO CONNECT TO WALLET WITH PRIVATE KEY {wallet_private_key}")
 
     def initialize_contract(self, abi, contract_address="", solidity="", bytecode=""):
+        """Initializes a connection with a contract, if necessary it deploys it.
+        Returns the contract address if it is successfully executed, otherwise an error message."""
 
-        if contract_address != "":
-            pass
-
-        elif bytecode != "":
+        # try:
+        if bytecode != "":
             # if bytecode is provided, create new contract (address) with provided bytecode
-            contract_address = self.create_txn_contract_bytecode(abi, bytecode)
-
+            txn_receipt = self.create_txn_contract_bytecode(abi, bytecode)
+            contract_address = txn_receipt['contractAddress']
         elif solidity != "":
-            # if solidity contract is provided, create new contract (address) with provided contract
-            contract_address = self.create_txn_contract_solidity(abi, solidity)   
-
+            return f"Solidity Contract deployment is not implemented"
+            # if solidity contract is provided, create new contract (address) with provided code
+            # contract_address = self.create_txn_contract_solidity(abi, solidity)   
+        elif contract_address != "":
+            # If contract address is provided, connect to existing contract (no deployment required)
+            pass
         else:
-            print("provide valid contract address or provide a solidity or bytecode to create a new contract!")
+            return f"Provide valid contract address, solidity code or bytecode input"
 
-        # Setting up contract with the needed abi (functions) and the contract address (for instantiation) 
+        # Initialize connection
         self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
-        print(f"Connected to ethereum smart contract: {self.contract.address}")
+        
+        print(f"Success: Web3 connection to smart contract at {contract_address}")
+
+        return self.contract.address
+
+        # except:
+        #     return f"FAILED TO CONNECT TO SMART CONTRACT WITH CONTRACT ADDRESS {contract_address}, SOLIDITY CODE {solidity} OR BYTECODE {bytecode}"
 
     def create_txn_contract_solidity(self, abi, solidity):
         NotImplemented
-        # return contract_address
         # relative_path = os.path.join("source", solidity)
         # current_directory = os.path.dirname(os.path.dirname(__file__))
         # absolute_path = os.path.join(current_directory, relative_path)
@@ -78,11 +96,8 @@ class Web3Connection(object):
         # compiled_sol = compile_source('pragma solidity ^0.4.0; contract A{ funcion A() public{}}')
 
     def create_txn_contract_bytecode(self, abi, bytecode):
-        """deploying a new contract with abi and bytecode"""
-
-        # getting bytecode by opening the bytecode text file and save it as a string
-        # with open(bytecode, mode='r') as infile:
-        #     bytecode = infile.read()
+        """deploying a new contract with supplied abi and bytecode
+        Returns the contract address if it is successfully executed."""
 
         # set up the contract based on the bytecode and abi functions
         contract = self.w3.eth.contract(abi = abi, bytecode = bytecode)
@@ -98,17 +113,17 @@ class Web3Connection(object):
 
         # send transaction
         txn_receipt = self.send_transaction(txn_dict)
+        txn_hash = txn_receipt['transactionHash']
+        txn_contract_address = txn_receipt['contractAddress']
 
-        # return new contract address
-        new_contract_address = txn_receipt["contractAddress"]
-        print(f"New contract address: {new_contract_address}\n")
+        print(f"Success: Web3 created new contract at {txn_contract_address} with hash {txn_hash}")
 
-        return new_contract_address
+        return txn_receipt
 
     def create_txn_transfer(self, to_address, value):
-        
-        print("Trying to transfer ETH")
-        
+        """Creates a transaction dict to transfer ETH of supplied value to the supplied to-address. 
+        Returns the hash if it is successfully executed."""
+
          # get the transaction default values (gasprice, chainid, gas)
         txn_dict_build = transaction_dictionary_defaults()
         txn_dict_build.update({
@@ -118,39 +133,42 @@ class Web3Connection(object):
             })
 
         txn_dict = txn_dict_build
-        txn_hash = self.send_transaction(txn_dict)
+        txn_receipt = self.send_transaction(txn_dict)
+        print(f"Success: Send ETH of value {value} to {to_address}")
 
-        print(f"Deposited {value} Eth in this account")
-        print("")
-
-        return txn_hash
+        return txn_receipt
 
     def get_nonce(self):
+        """Get the nonce for a new transaction for this account
+        Returns the nonce if it is successfully executed."""
+
         nonce = self.w3.eth.getTransactionCount(self.account.address)
         return nonce
 
     def send_transaction(self, txn_dict):
-        
+        """Creates a transaction of the supplied transaction dict and sends it. 
+        Returns the hash if it is successfully executed."""
+
         # sign transaction
         txn_signed = self.account.signTransaction(txn_dict)
         # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
         # send transaction
         txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
-        print(f"Transaction send with hash: {txn_hash.hex()}")
 
         # request receipt
         status = "Waiting for receipt"
         while status == "Waiting for receipt":
             try:
                 txn_receipt = self.w3.eth.getTransactionReceipt(txn_hash.hex())
-                status = f"Confirmed with receipt: {txn_receipt}"
-                print(status)
+                status = f"Receipt confirmed!"
+                print(f"--{status}--")
             except:
-                print(status)
-                time.sleep(5)
+                print(f"--{status}--")
+                time.sleep(10)
         
-        print("Waiting a bit to make sure the transaction completed")
+        # Making sure transaction went through (otherwise you get a replacement error)
         time.sleep(5)
 
+        print(txn_receipt)
         return txn_receipt
