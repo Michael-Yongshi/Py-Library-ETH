@@ -148,7 +148,7 @@ class Web3Connection(object):
                 print(status)
             except:
                 print(status)
-                time.sleep(1)
+                time.sleep(5)
         
         print("Waiting a bit to make sure the transaction completed")
         time.sleep(5)
