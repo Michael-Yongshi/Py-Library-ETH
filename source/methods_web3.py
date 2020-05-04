@@ -9,8 +9,8 @@ def create_private_key():
     account = auto.w3.eth.account.create(random_string)
     wallet_private_key = account.privateKey.hex()[2:]
 
-    print(f"New privatekey generated: {wallet_private_key}")
-    print("")
+    # print(f"New privatekey generated: {wallet_private_key}")
+    # print("")
 
     return wallet_private_key
 
