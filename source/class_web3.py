@@ -29,7 +29,7 @@ class Web3Connection(object):
             print(f"Success: Web3 connection to ethereum node {network_url}: {w3.isConnected()}")
             return Web3Connection(w3)
         except:
-            return f"FAILED TO SET UP WEB3 CONNECTION TO NODE {network_url}"
+            print(f"FAILED TO SET UP WEB3 CONNECTION TO NODE {network_url}")
 
     def initialize_wallet(self, wallet_private_key):
         """initializes a wallet from a given private key
@@ -113,7 +113,7 @@ class Web3Connection(object):
 
         # send transaction
         txn_receipt = self.send_transaction(txn_dict)
-        txn_hash = txn_receipt['transactionHash']
+        txn_hash = txn_receipt['transactionHash'].hex()
         txn_contract_address = txn_receipt['contractAddress']
 
         print(f"Success: Web3 created new contract at {txn_contract_address} with hash {txn_hash}")
@@ -134,7 +134,9 @@ class Web3Connection(object):
 
         txn_dict = txn_dict_build
         txn_receipt = self.send_transaction(txn_dict)
-        print(f"Success: Send ETH of value {value} to {to_address}")
+        txn_hash = txn_receipt['transactionHash'].hex()
+
+        print(f"Success: Send ETH of value {value} to {to_address} with hash {txn_hash}")
 
         return txn_receipt
 
