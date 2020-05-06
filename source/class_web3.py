@@ -172,5 +172,5 @@ class Web3Connection(object):
         # Making sure transaction went through (otherwise you get a replacement error)
         time.sleep(5)
 
-        print(txn_receipt)
+        # print(txn_receipt)
         return txn_receipt
