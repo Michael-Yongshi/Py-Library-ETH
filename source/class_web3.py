@@ -2,6 +2,7 @@ import os
 import time
 
 from web3 import Web3, auto
+from eth_account.messages import encode_defunct
 
 from .methods_web3 import (
     create_private_key,
@@ -174,3 +175,11 @@ class Web3Connection(object):
 
         # print(txn_receipt)
         return txn_receipt
+
+    def sign_message(self, data, wallet_private_key):
+
+        message = encode_defunct(data)
+        signed_message = auto.w3.eth.account.sign_message(message, wallet_private_key)
+        signature = signed_message['signature'].hex()
+
+        return signature
