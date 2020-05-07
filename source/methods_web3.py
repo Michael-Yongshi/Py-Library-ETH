@@ -2,6 +2,7 @@ import os
 import time
 
 from web3 import auto
+from web3 import utils
    
 def create_private_key():
 
@@ -64,3 +65,6 @@ def deploy_dictionary_defaults():
     # transfer uses nonce, chainid, gasprice, gas, to, value, 
 
     return txn_build_dict
+
+def hashing_stuff(*args):
+    utils.soliditySha3(*args)
