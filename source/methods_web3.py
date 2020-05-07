@@ -2,8 +2,8 @@ import os
 import time
 
 from web3 import auto
-from web3 import utils
-   
+from web3 import Web3
+
 def create_private_key():
 
     random_string = os.urandom(30).hex() 
@@ -66,5 +66,6 @@ def deploy_dictionary_defaults():
 
     return txn_build_dict
 
-def hashing_stuff(*args):
-    utils.soliditySha3(*args)
+def hashing_stuff(typearray, valuearray):
+
+    return Web3.soliditykeccak(typearray, valuearray)
