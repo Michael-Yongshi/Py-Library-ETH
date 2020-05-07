@@ -68,4 +68,5 @@ def deploy_dictionary_defaults():
 
 def hashing_stuff(typearray, valuearray):
 
-    return Web3.soliditykeccak(typearray, valuearray)
+    hash = Web3.solidityKeccak(typearray, valuearray)
+    return hash
