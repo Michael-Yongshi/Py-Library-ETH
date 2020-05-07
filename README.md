@@ -15,3 +15,5 @@ only then with pip
 ```
 pip3 install --user web3                # (prod) 
 ```
+
+https://web3py.readthedocs.io/en/stable/web3.eth.html
