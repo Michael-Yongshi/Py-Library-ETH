@@ -65,8 +65,3 @@ def deploy_dictionary_defaults():
     # transfer uses nonce, chainid, gasprice, gas, to, value, 
 
     return txn_build_dict
-
-def hashing_stuff(typearray, valuearray):
-
-    hash = Web3.solidityKeccak(typearray, valuearray)
-    return hash

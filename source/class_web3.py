@@ -116,8 +116,10 @@ class Web3Connection(object):
         txn_receipt = self.send_transaction(txn_dict)
         txn_hash = txn_receipt['transactionHash'].hex()
         txn_contract_address = txn_receipt['contractAddress']
-
-        print(f"Success: Web3 created new contract at {txn_contract_address} with hash {txn_hash}")
+        if txn_receipt["status"] == 1:
+            print(f"Success: Web3 created new contract at {txn_contract_address} with hash {txn_hash}")
+        else:
+            print(f"Failed: Deploy contract transaction reverted with hash {txn_hash}")
 
         return txn_receipt
 
@@ -137,8 +139,11 @@ class Web3Connection(object):
         txn_receipt = self.send_transaction(txn_dict)
         txn_hash = txn_receipt['transactionHash'].hex()
 
-        print(f"Success: Send ETH of value {value} to {to_address} with hash {txn_hash}")
-
+        if txn_receipt["status"] == 1:
+            print(f"Success: Send ETH of value {value} to {to_address} with hash {txn_hash}")
+        else:
+            print(f"Failed: Send ETH transaction reverted with hash {txn_hash}")
+        
         return txn_receipt
 
     def get_nonce(self):
@@ -183,3 +188,9 @@ class Web3Connection(object):
         signature = signed_message['signature'].hex()
 
         return signature
+
+    def hash_message(self, typearray, valuearray):
+
+        hashbytes = self.w3.solidityKeccak(abi_types=typearray, values=valuearray)
+
+        return hashbytes
