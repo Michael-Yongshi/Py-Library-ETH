@@ -20,20 +20,27 @@ class Web3Connection(object):
         self.contract = contract
 
     @staticmethod
-    def initialize_connection(network_url):
-        """Initialize a Web3 connection to the given node at a certain url
+    def initialize_connection(node_url, connect_type = ""):
+        """Initialize a Web3 connection to the given node at a certain url, if connect_type is given set up a non-http connection (websocket or local)
         returns the connection if it executes successfully"""
 
         # Connect to specific network
-        try:
-            w3 = Web3(Web3.HTTPProvider(network_url))
-            if w3.isConnected() == True:
-                print(f"Success: Web3 connection to ethereum node {network_url}")
-            else:
-                print(f"Failed to create a Web3 connection to ethereum node {network_url}")
-            return Web3Connection(w3)
-        except:
-            print(f"FAILED TO SET UP WEB3 CONNECTION TO NODE {network_url}")
+        # try:
+        if connect_type == "ws":
+            w3 = Web3(Web3.WebsocketProvider(node_url))
+        elif connect_type == "local":
+            w3 = Web3(Web3.IPCProvider(node_url))
+        else:
+            w3 = Web3(Web3.HTTPProvider(node_url))
+
+        if w3.isConnected() == True:
+            print(f"Success: Web3 connection to ethereum node {node_url}")
+        else:
+            print(f"Failed to create a Web3 connection to ethereum node {node_url}")
+            
+        return Web3Connection(w3)
+        # except:
+        #     print(f"FAILED TO SET UP WEB3 CONNECTION TO NODE {node_url}")
 
     def initialize_wallet(self, wallet_private_key):
         """initializes a wallet from a given private key
