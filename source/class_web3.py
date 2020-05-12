@@ -27,7 +27,10 @@ class Web3Connection(object):
         # Connect to specific network
         try:
             w3 = Web3(Web3.HTTPProvider(network_url))
-            print(f"Success: Web3 connection to ethereum node {network_url}: {w3.isConnected()}")
+            if w3.isConnected() == True:
+                print(f"Success: Web3 connection to ethereum node {network_url}")
+            else:
+                print(f"Failed to create a Web3 connection to ethereum node {network_url}")
             return Web3Connection(w3)
         except:
             print(f"FAILED TO SET UP WEB3 CONNECTION TO NODE {network_url}")
