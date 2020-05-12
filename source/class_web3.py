@@ -28,10 +28,10 @@ class Web3Connection(object):
         # try:
         if connect_type == "ws":
             w3 = Web3(Web3.WebsocketProvider(node_url))
-        elif connect_type == "local":
-            w3 = Web3(Web3.IPCProvider(node_url))
-        else:
+        elif connect_type == "http":
             w3 = Web3(Web3.HTTPProvider(node_url))
+        else:
+            w3 = Web3(Web3.IPCProvider(node_url))
 
         if w3.isConnected() == True:
             print(f"Success: Web3 connection to ethereum node {node_url}")
