@@ -1,10 +1,8 @@
-import os
-import time
-
-from web3 import auto
-from web3 import Web3
+from web3 import auto # standalone web3 functions and methods
 
 def create_private_key():
+
+    import os # for the urandom function to create randomness
 
     random_string = os.urandom(30).hex() 
     account = auto.w3.eth.account.create(random_string)
@@ -65,3 +63,32 @@ def deploy_dictionary_defaults():
     # transfer uses nonce, chainid, gasprice, gas, to, value, 
 
     return txn_build_dict
+
+def ping(host):
+    """
+    Returns True if host (str) responds to a ping request.
+    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
+    """
+    import platform    # For getting the operating system name
+    import subprocess  # For executing a shell command
+
+    index = host.find("//")
+    if index != -1:
+        i = index + 2
+        host = host[i:]
+    
+    index = host.find(":")
+    if index != -1:
+        host = host[:index]
+        
+    # Option for the number of packets as a function of
+    param = '-n' if platform.system().lower()=='windows' else '-c'
+
+    # Building the command. Ex: "ping -c 1 google.com"
+    command = ['ping', param, '1', host]
+
+    subprocess.call(command)
+
+if __name__ == '__main__':
+
+    ping("http://192.168.178.25:8545")
