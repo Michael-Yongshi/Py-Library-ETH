@@ -9,6 +9,7 @@ from .methods_web3 import (
     search_private_key,
     transaction_dictionary_defaults,
     deploy_dictionary_defaults,
+    ping,
 )
 from .methods_json import load_json
 
@@ -24,19 +25,27 @@ class Web3Connection(object):
         """Initialize a Web3 connection to the given node at a certain url, if connect_type is given set up a non-http connection (websocket or local)
         returns the connection if it executes successfully"""
 
-        # Connect to specific network
         # try:
+        # Connect to specific network (websocket, http or personal connection)
         if connect_type == "ws":
-            w3 = Web3(Web3.WebsocketProvider(node_url))
+            url = "ws://" + node_url
+            w3 = Web3(Web3.WebsocketProvider(url))
         elif connect_type == "http":
-            w3 = Web3(Web3.HTTPProvider(node_url))
+            url = "http://" + node_url
+            w3 = Web3(Web3.HTTPProvider(url))
+        elif connect_type == "https":
+            url = "https://" + node_url
+            w3 = Web3(Web3.HTTPProvider(url))
         else:
             w3 = Web3(Web3.IPCProvider(node_url))
 
+        # check connection
         if w3.isConnected() == True:
-            print(f"Success: Web3 connection to ethereum node {node_url}")
+            print(f"Pinging the target {ping(url)}")
+            print(f"Success: Web3 connection to ethereum node {url}")
         else:
-            print(f"Failed to create a Web3 connection to ethereum node {node_url}")
+            print(f"Pinging the target {ping(url)}")
+            print(f"Failed to create a Web3 connection to ethereum node {url}")
             
         return Web3Connection(w3)
         # except:
