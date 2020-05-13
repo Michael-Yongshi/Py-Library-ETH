@@ -41,7 +41,6 @@ class Web3Connection(object):
 
         # check connection
         if w3.isConnected() == True:
-            print(f"Pinging the target {ping(url)}")
             print(f"Success: Web3 connection to ethereum node {url}")
         else:
             print(f"Pinging the target {ping(url)}")
