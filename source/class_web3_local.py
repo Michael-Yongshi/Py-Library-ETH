@@ -1,22 +1,22 @@
 from web3 import auto # standalone web3 functions and methods
-from eth_account import Account
-from eth_account.messages import encode_defunct
+from eth_account import Account # local ethereum wallet functionality
+from eth_account.messages import encode_defunct # specific encoding for signing
 
 class Web3Local(object):
     def __init__(self):
         super().__init__()
 
     @staticmethod
-    def encrypt_private_key(wallet_private_key, password):
+    def encrypt_private_key(wallet_private_key, password_hash):
 
-        encrypted_key = Account.encrypt(wallet_private_key, password)
+        encrypted_key = Account.encrypt(wallet_private_key, password_hash)
         
         return encrypted_key
 
     @staticmethod
-    def decrypt_private_key(encrypted_key, password):
+    def decrypt_private_key(encrypted_key, password_hash):
 
-        wallet_private_key = Account.decrypt(encrypted_key, password)
+        wallet_private_key = Account.decrypt(encrypted_key, password_hash)
 
         return wallet_private_key
 
@@ -41,18 +41,37 @@ class Web3Local(object):
 
         return acct.address
 
-    @staticmethod
-    def sign_transaction(txn_dict, encrypted_key, password):
-            
-        # decrypt the encrypted key
-        wallet_private_key = Web3Local.decrypt_private_key(encrypted_key, password)
+    staticmethod
+    def search_private_key(data):
 
+        try:
+            wallet_private_key = data
+            # print(f"tag has data {data}")
+
+            try:
+                auto.w3.eth.account.from_key(wallet_private_key)
+                private_key_found = True
+                # print(f"tag has a valid private key")
+                # print("")
+
+            except:
+                private_key_found = False
+                # print(f"no valid private key found on tag")
+
+        except:
+            # print(f"tag is empty")
+            private_key_found = False
+
+        return private_key_found
+
+    @staticmethod
+    def sign_transaction(txn_dict, wallet_private_key):
+          
         # create local account
         acct = Account.from_key(wallet_private_key)
 
         # sign transaction
         txn_signed = acct.signTransaction(txn_dict)
-        # print(f"Signed transaction: {txn_signed}") # Shows huge bit string
 
         return txn_signed
 
@@ -78,7 +97,7 @@ class Web3Local(object):
     @staticmethod
     def get_public_key_from_signature(signature):
 
-        wallet_public_key = Account.recover()
+        wallet_public_key = Account.recover(signature)
 
         return wallet_public_key
 
@@ -88,6 +107,37 @@ class Web3Local(object):
         hashbytes = auto.w3.solidityKeccak(abi_types=typearray, values=valuearray)
 
         return hashbytes
+
+    @staticmethod
+    def transaction_dictionary_defaults():
+        """nonce is mandatory, others are optional, if gas = 0 then the default will be used."""
+        
+        txn_build_dict = {
+            "gas": 2000000,
+            "gasPrice": auto.w3.toWei("10000000000", "wei"),
+            "chainId": 3,
+            }
+
+        # contract constructor uses nonce, chainid, gasprice, from
+        # function execute uses nonce, chainid, gasprice, gas, 
+        # transfer uses nonce, chainid, gasprice, gas, to, value, 
+
+        return txn_build_dict
+
+    @staticmethod
+    def deploy_dictionary_defaults():
+        """nonce is mandatory, others are optional, if gas = 0 then the default will be used."""
+        
+        txn_build_dict = {
+            "gasPrice": auto.w3.toWei("10000000000", "wei"),
+            "chainId": 3,
+            }
+
+        # contract constructor uses nonce, chainid, gasprice, from
+        # function execute uses nonce, chainid, gasprice, gas, 
+        # transfer uses nonce, chainid, gasprice, gas, to, value, 
+
+        return txn_build_dict
 
 if __name__ == '__main__':
 
