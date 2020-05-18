@@ -4,12 +4,7 @@ import time
 from web3 import Web3, auto
 from eth_account.messages import encode_defunct
 
-from .methods_web3 import (
-    transaction_dictionary_defaults,
-    deploy_dictionary_defaults,
-    ping,
-)
-from .methods_json import load_json
+from .class_web3_local import Web3Local
 
 class Web3Connection(object):
     def __init__(self, w3, account = None, contract = None):
@@ -40,25 +35,12 @@ class Web3Connection(object):
         if w3.isConnected() == True:
             print(f"Success: Web3 connection to ethereum node {url}")
         else:
-            print(f"Pinging the target {ping(url)}")
+            # print(f"Pinging the target {ping(url)}")
             print(f"Failed to create a Web3 connection to ethereum node {url}")
             
         return Web3Connection(w3)
         # except:
         #     print(f"FAILED TO SET UP WEB3 CONNECTION TO NODE {node_url}")
-
-    def initialize_wallet(self, wallet_private_key):
-        """initializes a wallet from a given private key
-        Returns the wallet address if it is successfully executed, otherwise an error message."""
-
-        # Connect to account
-        try:
-            self.account = self.w3.eth.account.privateKeyToAccount(wallet_private_key)
-            wallet_address = self.account.address
-            print(f"Success: Web3 connection to wallet at {wallet_address}")
-            return wallet_address
-        except:
-            print(f"FAILED TO CONNECT TO WALLET WITH PRIVATE KEY {wallet_private_key}")
 
     def initialize_contract(self, abi, contract_address="", solidity="", bytecode=""):
         """Initializes a connection with a contract, if necessary it deploys it.
@@ -89,7 +71,7 @@ class Web3Connection(object):
         # except:
         #     return f"FAILED TO CONNECT TO SMART CONTRACT WITH CONTRACT ADDRESS {contract_address}, SOLIDITY CODE {solidity} OR BYTECODE {bytecode}"
 
-    def create_txn_contract_bytecode(self, abi, bytecode):
+    def create_txn_contract_bytecode(self, abi, bytecode, wallet_public_key):
         """deploying a new contract with supplied abi and bytecode
         Returns the contract address if it is successfully executed."""
 
@@ -97,9 +79,9 @@ class Web3Connection(object):
         contract = self.w3.eth.contract(abi = abi, bytecode = bytecode)
 
         # get the transaction default values (gasprice, chainid, gas)
-        txn_dict_build = deploy_dictionary_defaults()
+        txn_dict_build = Web3Local.deploy_dictionary_defaults()
         txn_dict_build.update({
-            'nonce': self.w3.eth.getTransactionCount(self.account.address),
+            'nonce': self.get_nonce(wallet_public_key),
             })
 
         # construct transaction
@@ -107,14 +89,14 @@ class Web3Connection(object):
 
         return txn_dict
 
-    def create_txn_transfer(self, to_address, value):
+    def create_txn_transfer(self, to_address, value, wallet_public_key):
         """Creates a transaction dict to transfer ETH of supplied value to the supplied to-address. 
         Returns the hash if it is successfully executed."""
 
          # get the transaction default values (gasprice, chainid, gas)
-        txn_dict_build = transaction_dictionary_defaults()
+        txn_dict_build = Web3Local.transaction_dictionary_defaults()
         txn_dict_build.update({
-            'nonce': self.w3.eth.getTransactionCount(self.account.address),
+            'nonce': self.get_nonce(wallet_public_key),
             'to': to_address,
             'value': value,
             })
@@ -122,24 +104,6 @@ class Web3Connection(object):
         txn_dict = txn_dict_build
 
         return txn_dict
-        
-        txn_signed = 
-        txn_receipt = self.send_transaction(txn_dict)
-        txn_hash = txn_receipt['transactionHash'].hex()
-
-        if txn_receipt["status"] == 1:
-            print(f"Success: Send ETH of value {value} to {to_address} with hash {txn_hash}")
-        else:
-            print(f"Failed: Send ETH transaction reverted with hash {txn_hash}")
-        
-        return txn_receipt
-
-    def get_nonce(self):
-        """Get the nonce for a new transaction for this account
-        Returns the nonce if it is successfully executed."""
-
-        nonce = self.w3.eth.getTransactionCount(self.account.address)
-        return nonce
 
     def send_transaction(self, txn_signed):
         """Sends the signed transaction. 
@@ -164,3 +128,10 @@ class Web3Connection(object):
 
         # print(txn_receipt)
         return txn_receipt
+
+    def get_nonce(self, wallet_public_key):
+        """Get the nonce for a new transaction for this account
+        Returns the nonce if it is successfully executed."""
+
+        nonce = self.w3.eth.getTransactionCount(wallet_public_key)
+        return nonce
