@@ -76,6 +76,13 @@ class Web3Local(object):
         return signature
 
     @staticmethod
+    def get_public_key_from_signature(signature):
+
+        wallet_public_key = Account.recover()
+
+        return wallet_public_key
+
+    @staticmethod
     def create_web3_hash(typearray, valuearray):
 
         hashbytes = auto.w3.solidityKeccak(abi_types=typearray, values=valuearray)
