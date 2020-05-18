@@ -41,7 +41,7 @@ class Web3Local(object):
 
         return acct.address
 
-    staticmethod
+    @staticmethod
     def search_private_key(data):
 
         try:
@@ -82,7 +82,7 @@ class Web3Local(object):
         acct = Account.from_key(wallet_private_key)
 
         # Sign message with the private key
-        message = encode_defunct(text=data)
+        message = encode_defunct(text=str(data))
         signed_message = acct.sign_message(message)
 
         return signed_message
