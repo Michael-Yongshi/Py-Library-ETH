@@ -111,6 +111,8 @@ class Web3Connection(object):
 
         # send transaction
         txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        txn_hash_string = txn_hash.hex()
+        print(f"--Sending TXN to the node with hash {txn_hash_string}--")
 
         # request receipt
         status = "Waiting for receipt"
