@@ -42,14 +42,14 @@ class Web3Connection(object):
         # except:
         #     print(f"FAILED TO SET UP WEB3 CONNECTION TO NODE {node_url}")
 
-    def initialize_contract(self, abi, contract_address="", solidity="", bytecode=""):
+    def initialize_contract(self, abi, wallet_public_key, contract_address="", solidity="", bytecode=""):
         """Initializes a connection with a contract, if necessary it deploys it.
         Returns the contract address if it is successfully executed, otherwise an error message."""
 
         # try:
         if bytecode != "":
             # if bytecode is provided, create new contract (address) with provided bytecode
-            txn_receipt = self.create_txn_contract_bytecode(abi, bytecode)
+            txn_receipt = self.create_txn_contract_bytecode(abi, bytecode, wallet_public_key)
             contract_address = txn_receipt['contractAddress']
         elif solidity != "":
             return f"Solidity Contract deployment is not implemented"
