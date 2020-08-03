@@ -46,20 +46,28 @@ class Web3Connection(object):
         """Initializes a connection with a contract, if necessary it deploys it.
         Returns the contract address if it is successfully executed, otherwise an error message."""
 
+        print(f"input contract address = {contract_address}")
+        print(f"input solidity contract = {solidity}")
+        print(f"input bytecode = {bytecode}")
+
         # try:
         if bytecode != "":
             # if bytecode is provided, create new contract (address) with provided bytecode
             txn_receipt = self.create_txn_contract_bytecode(abi, bytecode, wallet_public_key)
             contract_address = txn_receipt['contractAddress']
+            print(f"Solidity Contract deployment executed with contract address: {contract_address}")
+
         elif solidity != "":
             return f"Solidity Contract deployment is not implemented"
             # if solidity contract is provided, create new contract (address) with provided code
-            # contract_address = self.create_txn_contract_solidity(abi, solidity)   
+            # contract_address = self.create_txn_contract_solidity(abi, solidity)
+
         elif contract_address != "":
             # If contract address is provided, connect to existing contract (no deployment required)
-            pass
+            print(f"Contract address provided: {contract_address}")
+
         else:
-            return f"Provide valid contract address, solidity code or bytecode input"
+            print(f"Provide valid contract address, solidity code or bytecode input")
 
         # Initialize connection
         self.contract = self.w3.eth.contract(abi = abi, address = contract_address)
